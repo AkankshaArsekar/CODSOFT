@@ -1,1 +1,210 @@
+# linear algebra
+import numpy as np 
+
+# data processing
+import pandas as pd 
+
+# data visualization
+import seaborn as sns
+%matplotlib inline
+from matplotlib import pyplot as plt
+from matplotlib import style
+
+# Algorithms
+from sklearn import linear_model
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+df = pd.read_csv("tested.csv")
+df.info()
+df.describe()
+df.head(10)
+total = df.isnull().sum().sort_values(ascending=False)
+percent_1 = df.isnull().sum()/df.isnull().count()*100
+percent_2 = (round(percent_1, 1)).sort_values(ascending=False)
+missing_data = pd.concat([total, percent_2], axis=1, keys=['Total', '%'])
+missing_data.head(10)
+df.columns
+df.columns.values
+import matplotlib.pyplot as plt
+
+survived = 'Survived'
+not_survived = 'Not Survived'
+
+fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(8, 10))
+
+women = df[df['Sex'] == 'female']
+men = df[df['Sex'] == 'male']
+
+ax = axes[0]
+ax.hist(women[women['Survived'] == 1].Age.dropna(), bins=18, label=survived, color='green', alpha=0.5)
+ax.hist(women[women['Survived'] == 0].Age.dropna(), bins=18, label=not_survived, color='red', alpha=0.5)
+ax.legend()
+ax.set_title('Female')
+ax.set_xlabel('Age')
+ax.set_ylabel('Count')
+
+ax = axes[1]
+ax.hist(men[men['Survived'] == 1].Age.dropna(), bins=18, label=survived, color='green', alpha=0.5)
+ax.hist(men[men['Survived'] == 0].Age.dropna(), bins=18, label=not_survived, color='red', alpha=0.5)
+ax.legend()
+ax.set_title('Male')
+ax.set_xlabel('Age')
+ax.set_ylabel('Count')
+
+plt.tight_layout()
+plt.show()
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+g = sns.catplot(x="Pclass", y="Survived", hue="Sex", data=df, kind="point", col="Embarked", palette=None, height=3, aspect=1.6)
+g.set_titles("{col_name}")
+g.add_legend()
+
+plt.show()
+sns.barplot(x='Pclass', y='Survived', data=df)
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+grid = sns.FacetGrid(df, col='Survived', row='Pclass', height=2.2, aspect=1.6)
+grid.map(plt.hist, 'Age', alpha=0.5, bins=20)
+grid.add_legend()
+
+plt.show()
+
+df['relatives'] = df['SibSp'] + df['Parch']
+df['not_alone'] = 1
+df.loc[df['relatives'] > 0, 'not_alone'] = 0
+df['not_alone'].value_counts()
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.barplot(x='relatives', y='Survived', data=df)
+plt.xlabel('Relatives')
+plt.ylabel('Survival Probability')
+
+plt.show()
+
+df = df.drop(['PassengerId'], axis=1)
+import re
+deck = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6, "G": 7, "U": 8}
+data = [df]
+for dataset in data:
+    dataset['Cabin'] = dataset['Cabin'].fillna("U0")
+    dataset['Deck'] = dataset['Cabin'].map(lambda x: re.compile("([a-zA-Z]+)").search(x).group())
+    dataset['Deck'] = dataset['Deck'].map(deck)
+    dataset['Deck'] = dataset['Deck'].fillna(0)
+    dataset['Deck'] = dataset['Deck'].astype(int)
+# we can now drop the cabin feature
+df = df.drop(['Cabin'], axis=1)
+data = [df]
+
+for dataset in data:
+    mean = df["Age"].mean()
+    std = df["Age"].std()
+    is_null = dataset["Age"].isnull().sum()
+    # compute random numbers between the mean, std and is_null
+    rand_age = np.random.randint(mean - std, mean + std, size = is_null)
+    # fill NaN values in Age column with random values generated
+    age_slice = dataset["Age"].copy()
+    age_slice[np.isnan(age_slice)] = rand_age
+    dataset["Age"] = age_slice
+    dataset["Age"] = df["Age"].astype(int)
+df["Age"].isnull().sum()
+df['Embarked'].describe()
+common_value = 'S'
+data = [df]
+
+for dataset in data:
+    dataset['Embarked'] = dataset['Embarked'].fillna(common_value)
+df.describe()
+df = df.drop(['Name'], axis=1)
+genders = {"male": 0, "female": 1}
+data = [df]
+
+for dataset in data:
+    dataset['Sex'] = dataset['Sex'].map(genders)
+df['Ticket'].describe()
+df =df.drop(['Ticket'], axis=1)
+ports = {"S": 0, "C": 1, "Q": 2}
+data = [df]
+
+for dataset in data:
+    dataset['Embarked'] = dataset['Embarked'].map(ports)
+df['Age'].value_counts()
+X_train = df.drop("Survived", axis=1)
+Y_train = df["Survived"]
+X_test = df.copy()
+print(X_train.columns)
+print(X_test.columns)
+X_train = X_train
+X_test = X_test.drop("Survived", axis =1)
+# Fill missing values with mean (for numerical features) or mode (for categorical features)
+X_train.fillna(X_train.mean(), inplace=True)
+X_test.fillna(X_test.mean(), inplace=True)
+
+# Create and train the random forest model
+random_forest = RandomForestClassifier(n_estimators=100)
+random_forest.fit(X_train, Y_train)
+
+# Make predictions
+Y_prediction = random_forest.predict(X_test)
+
+# Calculate accuracy on the training set
+acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
+
+logreg = LogisticRegression()
+logreg.fit(X_train, Y_train)
+
+Y_pred = logreg.predict(X_test)
+
+acc_log = round(logreg.score(X_train, Y_train) * 100, 2)
+decision_tree = DecisionTreeClassifier() 
+decision_tree.fit(X_train, Y_train)  
+Y_pred = decision_tree.predict(X_test) 
+acc_decision_tree = round(decision_tree.score(X_train, Y_train) * 100, 2)
+results = pd.DataFrame({
+    'Model': [ 'Logistic Regression','Random Forest','Decision Tree'],
+    'Score': [acc_log, acc_random_forest, acc_decision_tree]})
+result_df = results.sort_values(by='Score', ascending=False)
+result_df = result_df.set_index('Score')
+result_df.head(3)
+importances = pd.DataFrame({'feature':X_train.columns,'importance':np.round(random_forest.feature_importances_,3)})
+importances = importances.sort_values('importance',ascending=False).set_index('feature')
+importances.head(15)
+importances.plot.line()
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Calculate the correlation matrix
+corr_matrix = df.corr()
+
+# Create a heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+
+# Set the title of the heatmap
+plt.title('Correlation Heatmap')
+
+# Display the heatmap
+plt.show()
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Calculate the correlation matrix for "Survived" column
+corr_matrix = df.corr()[['Survived']]
+
+# Create a heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+
+# Set the title of the heatmap
+plt.title('Correlation Heatmap - Survived')
+
+# Display the heatmap
+plt.show()
+
 
