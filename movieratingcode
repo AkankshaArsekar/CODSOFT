@@ -1,0 +1,229 @@
+import pandas as pd
+import numpy as np
+import random as rnd
+
+# visualization
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+# machine learning
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC, LinearSVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import SGDClassifier
+from sklearn.tree import DecisionTreeClassifier
+df_movie = pd.read_csv('movies.dat', sep='::', engine='python', encoding='latin-1')
+df_movie.columns = ['MovieIDs', 'MovieName', 'Category']
+df_movie.dropna(inplace=True)
+df_movie.head()
+df_rating = pd.read_csv("ratings.dat",sep='::', engine='python',encoding='latin-1')
+df_rating.columns =['ID','MovieID','Ratings','TimeStamp']
+df_rating.dropna(inplace=True)
+df_rating.head()
+df_user = pd.read_csv("users.dat",sep='::',engine='python',encoding='latin-1')
+df_user.columns =['UserID','Gender','Age','Occupation','Zip-code']
+df_user.dropna(inplace=True)
+df_user.head()
+df_movie.info()
+df_movie.describe()
+df = pd.concat([df_movie, df_rating,df_user], axis=1)
+df
+df['Gender'].value_counts().plot(kind='bar',alpha=0.7)
+plt.show()
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming you have already loaded the 'users.dat' file into the DataFrame df_users
+
+# Plotting the histogram
+df_user.Age.plot.hist(bins=25)
+
+# Adding title and labels
+plt.title("Distribution of users' ages")
+plt.ylabel('Count of users')
+plt.xlabel('Age')
+
+# Displaying the plot
+plt.show()
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming you have already loaded the 'movies.dat' file into the DataFrame df_movie
+# and the 'Category' column contains the categories
+
+# Calculate the count of movies in each category
+category_counts = df_movie['Category'].value_counts()
+
+# Select the top 10 categories
+top_10_categories = category_counts.head(10)
+
+# Calculate the count of movies in other categories
+other_count = category_counts[10:].sum()
+
+# Combine the top 10 categories and the count of other categories
+top_10_categories['Other'] = other_count
+
+# Plotting the pie chart
+plt.pie(top_10_categories, labels=top_10_categories.index, autopct='%1.1f%%')
+
+# Adding title
+plt.title("Distribution of Top 10 Movies by Category")
+
+# Displaying the pie chart
+plt.show()
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming you have already loaded the 'movies.dat' file into the DataFrame df_movie
+# and the 'Category' column contains the categories, and 'Rating' column contains the movie ratings
+
+# Calculate the count of movies in each category
+category_counts = df['Category'].value_counts()
+
+# Select the top 20 categories
+top_20_categories = category_counts.head(20)
+
+# Filter the df_movie dataframe for only the top 20 categories
+df_top_20 = df[df['Category'].isin(top_20_categories.index)]
+
+# Boxplot to visualize ratings distribution by category for the top 20 categories
+df_top_20.boxplot(column='Ratings', by='Category', figsize=(10, 6))
+plt.title('Distribution of Ratings by Category (Top 20)')
+plt.xlabel('Category')
+plt.ylabel('Rating')
+plt.xticks(rotation=45)
+plt.show()
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming you have already loaded the 'movies.dat' file into the DataFrame df_movie
+# and the 'Category' column contains the categories, and 'Rating' column contains the movie ratings
+
+# Calculate the average ratings for each category
+avg_ratings = df.groupby('Category')['Ratings'].mean().sort_values()
+
+# Select the first 10 categories with the highest average ratings
+top_10_avg_ratings = avg_ratings.head(10)
+
+# Bar chart to visualize the average ratings of the top 10 categories
+top_10_avg_ratings.plot(kind='bar', figsize=(10, 6))
+plt.title('Average Ratings of Top 10 Categories')
+plt.xlabel('Category')
+plt.ylabel('Average Rating')
+plt.xticks(rotation=45)
+plt.show()
+
+
+df.columns
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Assuming you have already loaded the dataset into the DataFrame df_movie
+
+# Select the columns for the correlation matrix
+columns = ['Ratings', 'Age', 'Occupation']
+
+# Subset the DataFrame with the selected columns
+df_subset = df[columns]
+
+# Calculate the correlation matrix
+corr_matrix = df_subset.corr()
+
+# Create a heatmap of the correlation matrix
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+plt.title('Correlation Heatmap')
+plt.show()
+
+
+import pandas as pd
+import seaborn as sns
+
+# Assuming you have already loaded the dataset into the DataFrame df_movie
+
+# Select the relevant numerical columns
+numerical_columns = ['Ratings', 'Age', 'Occupation']
+
+# Subset the DataFrame with the selected numerical columns
+df_numerical = df[numerical_columns]
+
+# Pairplot to visualize relationships between numerical features
+sns.pairplot(df_numerical)
+plt.show()
+
+first_700 = df[700:]
+first_700.dropna(inplace=True)
+features = first_700[['MovieID','Age','Occupation']].values
+labels = first_700[['Ratings']].values
+
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Assuming you have already loaded the dataset into the DataFrame train
+# and the corresponding labels into the Series train_labels
+# Assuming you also have a test dataset loaded into the DataFrame test
+
+# Split the data into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# Create a logistic regression model
+logreg = LogisticRegression()
+
+# Fit the model on the training data
+logreg.fit(X_train, y_train)
+
+# Make predictions on the validation set
+y_pred = logreg.predict(X_val)
+
+# Calculate the accuracy of the model
+accuracy = accuracy_score(y_val, y_pred)
+print(f"Accuracy: {accuracy*100:.2f}%")
+
+# Decision Tree
+# Create a decision tree model
+decision_tree = DecisionTreeClassifier()
+
+# Fit the model on the training data
+decision_tree.fit(X_train, y_train)
+
+# Make predictions on the validation set
+y_pred_dt = decision_tree.predict(X_val)
+
+# Calculate the accuracy of the decision tree model
+accuracy_dt = accuracy_score(y_val, y_pred_dt)
+print(f"Decision Tree Accuracy: {accuracy_dt*100:.2f}%")
+random_forest = RandomForestClassifier()
+
+# Fit the model on the training data
+random_forest.fit(X_train, y_train)
+
+# Make predictions on the validation set
+y_pred_rf = random_forest.predict(X_val)
+
+# Calculate the accuracy of the random forest model
+accuracy_rf = accuracy_score(y_val, y_pred_rf)
+print(f"Random Forest Accuracy: {accuracy_rf*100:.2f}%")
+svm_model = SVC()
+
+# Fit the model on the training data
+svm_model.fit(X_train, y_train)
+
+# Make predictions on the validation set
+y_pred_svm = svm_model.predict(X_val)
+
+# Calculate the accuracy of the SVM model
+accuracy_svm = accuracy_score(y_val, y_pred_svm)
+print(f"SVM Accuracy: {accuracy_svm*100:.2f}%")
+
